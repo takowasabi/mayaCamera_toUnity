@@ -4,6 +4,8 @@
 # unityの環境に準じたcameraのみのFBXをmaがあるディレクトリに出力する
 
 import maya.cmds as cmds
+import sys
+sys.dont_write_bytecode = True
 
 # 選択されたcameraがcameraかどうかチェック。
 # cameraではない場合、nullを返す。
@@ -53,9 +55,11 @@ def exportFBX():
     cmds.delete("locator_Camera_pointConstraint1")
     cmds.delete("locator_Camera_orientConstraint1")
 
-def executeScript():
+def main():
     camShape =checkCam()
     if camShape!=None:
         settingCam(camShape)
         createNull(camShape)
+        setExpression(camShape)
+        locatorBake()
     pass
