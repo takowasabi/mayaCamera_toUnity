@@ -4,7 +4,7 @@
 # unityの環境に準じたcameraのみのFBXをmaがあるディレクトリに出力する
 
 import maya.cmds as cmds
-import sys
+import sys,os
 sys.dont_write_bytecode = True
 
 # 選択されたcameraがcameraかどうかチェック。
@@ -36,13 +36,12 @@ def createNull(camShape):
 # locatorのスケールXYZにエクスプレッションを仕込む。
 def setExpression(camShape):
     loc =cmds.ls("locator_Camera")[0]
-    expressionXString = "float $ncp;\n$ncp = `getAttr\n"+camShape+".nearClipPlane`;\nsetAttr locator_Camera.scaleX $ncp;"
+    expressionXString = "float $ncp;\n$ncp = `getAttr\n%s.nearClipPlane`;\nsetAttr %s.scaleX $ncp;"%(camShape,loc)
     cmds.expression(o=loc,s=expressionXString)
-    expressionYString = "float $fcp;\n$fcp = `getAttr\n"+camShape+".farClipPlane`;\nsetAttr locator_Camera.scaleY $fcp;"
+    expressionYString = "float $fcp;\n$fcp = `getAttr\n%s.farClipPlane`;\nsetAttr %s.scaleY $fcp;"%(camShape,loc)
     cmds.expression(o=loc,s=expressionYString)
-    expressionZString="float $fl;\nfloat $vfa;\nfloat $FoV;\n\n$fl =`getAttr "+camShape+".focalLength`;\n$vfa = `getAttr "+camShape+".verticalFilmAperture`;\n\n$FoV =2.0 * atan((0.5*$vfa)/($fl*0.03937))*57.29578;\n\nsetAttr locator_Camera.scaleZ $FoV;"
+    expressionZString="float $fl;\nfloat $vfa;\nfloat $FoV;\n\n$fl =`getAttr %s.focalLength`;\n$vfa = `getAttr %s.verticalFilmAperture`;\n\n$FoV =2.0 * atan((0.5*$vfa)/($fl*0.03937))*57.29578;\n\nsetAttr %s.scaleZ $FoV;"%(camShape,camShape,loc)
     cmds.expression(o=loc,s=expressionZString)
-    pass
 
 
 # ロケーターのtransとscaleをﾍﾞｲｸする。
@@ -52,14 +51,25 @@ def locatorBake():
 
 # コンストをbreakしてロケーターのみをmaファイルと同ディレクトリにFBXとして出力。
 def exportFBX():
+    fbxDir = cmds.file()
     cmds.delete("locator_Camera_pointConstraint1")
     cmds.delete("locator_Camera_orientConstraint1")
 
+    maPath =cmds.file(q=1,expandName=1)
+    Dirname=os.path.dirname(maPath)
+    savePath =os.path.join(Dirname,"mayaCamera.fbx")
+    cmds.file(savePath,force=True,options="v=0;",typ="FBX export",pr=True,es=True)
+
 def main():
     camShape =checkCam()
+    if camShape==None:
+        print "=========================================="
+        print "plese select camera"
+        print "=========================================="
     if camShape!=None:
         settingCam(camShape)
         createNull(camShape)
         setExpression(camShape)
         locatorBake()
+        exportFBX()
     pass
