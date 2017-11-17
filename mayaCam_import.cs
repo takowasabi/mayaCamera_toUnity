@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 
-public class TestSelectedObject : Editor
+
+// add Assets/Editor
+public class TestSelectedObject2 : Editor
 {
     [MenuItem("SAPPTools/set_MayaCamera")]
     static void Create()
@@ -18,7 +20,7 @@ public class TestSelectedObject : Editor
 
 			mainCam.transform.parent = Selection.activeTransform;
       setDefaultvalue();
-      mayaCam.AddComponent<MayaCameraConverter>();
+      //mayaCam.AddComponent<MayaCameraConverter>();
 		}
     }
 
